@@ -1,0 +1,21 @@
+{
+  "name": "social-media-application",
+  "version": "1.0.0",
+  "description": "Initial package file to setup the project",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snadi043/SOCIAL-MEDIA_APP.git"
+  },
+  "author": "SAI",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/snadi043/SOCIAL-MEDIA_APP/issues"
+  },
+  "homepage": "https://github.com/snadi043/SOCIAL-MEDIA_APP#readme"
+}
