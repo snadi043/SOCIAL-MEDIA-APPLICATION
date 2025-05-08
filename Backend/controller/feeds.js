@@ -2,8 +2,14 @@
 exports.getPosts = (req, res, next) => {
     res.status(200).json({
         posts: [{
+            "_id": '1',
             "title": "My First social media feed",
-            "content": "This is the content created using the REST principles"
+            "content": "This is the content created using the REST principles",
+            "image": "images/content.png",
+            "creator": {
+                "name": "SAI",
+            },
+            "createdAt": new Date(),
         }]
     });
 }

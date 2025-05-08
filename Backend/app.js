@@ -7,6 +7,9 @@ const bodyParser = require('body-parser');
 // Importing the routes file to update it in the whole application.
 const feedsRoutes = require('./routes/feeds');
 
+// Importing the CORS Package.
+var cors = require('cors');
+
 // Initializing the app with express.
 const app = express();
 
@@ -25,6 +28,7 @@ const allowCrossDomain = (req, res, next) => {
 };
 
 // Using the CORS configurations in the application.
+app.use(cors());
 app.use(allowCrossDomain);
 
 // Configuring the application server to respond/listen on the host 8080.
