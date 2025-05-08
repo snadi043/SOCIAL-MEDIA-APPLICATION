@@ -1,3 +1,6 @@
+// This is the file responsible to render the view and the data 
+// (which is shared from the backend - decoupled) when dealing with getting the single feed in the application.
+// GET a single feed -> REST API (http://localhost:8080/feeds/posts) -> 
 import React, { Component } from 'react';
 
 import Image from '../../../components/Image/Image';
@@ -14,7 +17,8 @@ class SinglePost extends Component {
 
   componentDidMount() {
     const postId = this.props.match.params.postId;
-    fetch('URL')
+    // The url here has to have the filter for individual feed which is similar to 'http://localhost:8080/feeds/posts/:postId'
+    fetch('http://localhost:8080/feeds/posts/' + postId)
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch status');

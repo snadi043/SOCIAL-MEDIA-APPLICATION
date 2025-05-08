@@ -22,7 +22,8 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    fetch('URL')
+    // URL to fetch the user to authenticate the access to the user before using the application.
+    fetch('')
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch user status.');
@@ -36,7 +37,7 @@ class Feed extends Component {
 
     this.loadPosts();
   }
-
+  // Logic for the pagination in the application followed by getting the feeds into the application.
   loadPosts = direction => {
     if (direction) {
       this.setState({ postsLoading: true, posts: [] });
@@ -50,7 +51,8 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch('URL')
+    // URL to GET the feeds from the database(mongoDB) eventually to render on to the UI.
+    fetch('http://localhost:8080/feeds/posts')
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch posts.');
@@ -69,7 +71,7 @@ class Feed extends Component {
 
   statusUpdateHandler = event => {
     event.preventDefault();
-    fetch('URL')
+    fetch('http://localhost:8080/feeds/post')
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error("Can't update status!");
