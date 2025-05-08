@@ -25,6 +25,7 @@ const modal = props =>
         </Button>
       </div>
     </div>,
+    // 'modal-root' is the id which is defined in the index.html file and the application renders on that element to create the modal feature while building the application. 
     document.getElementById('modal-root')
   );
 

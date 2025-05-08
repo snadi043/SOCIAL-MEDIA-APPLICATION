@@ -1,15 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Switch } from 'react-router-dom';
 
 import './index.css';
 import App from './App';
 
 ReactDOM.render(
   <BrowserRouter>
-    <App />
+    <Switch>
+      <App />  {/* Calls the app.js file and executes the file when building the application. */}
+    </Switch>
   </BrowserRouter>,
-  document.getElementById('root')
+  // 'root' is the id which is defined in the index.html file and the application renders on that element while building the application. 
+  document.getElementById('root') 
 );
 
 // If you want your app to work offline and load faster, you can change
