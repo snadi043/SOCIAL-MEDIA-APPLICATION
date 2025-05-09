@@ -16,20 +16,21 @@ const app = express();
 // Middleware to use the body-parser to parse the json format data in the application.
 app.use(bodyParser.json());
 
+
+// Middleware to configure the necessary application server based settings to avoid interuptions while building the application.
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers');
+    next();
+});
+
+// Always make use the routes middleware is build after the response headers are set.
 // Middleware to register the routes with the '/feeds' filter/flag to create and access the routes.
 app.use('/feeds', feedsRoutes);
 
-// Middleware to configure the necessary application server based settings to avoid interuptions while building the application.
-const allowCrossDomain = (req, res, next) => {
-    res.header(`Access-Control-Allow-Origin`, `*`);
-    res.header(`Access-Control-Allow-Methods`, `GET,PUT,POST,PATCH,DELETE`);
-    res.header(`Access-Control-Allow-Headers`, `Content-Type`);
-    next();
-};
-
 // Using the CORS configurations in the application.
-app.use(cors());
-app.use(allowCrossDomain);
+// app.use(allowCrossDomain);
 
 // Configuring the application server to respond/listen on the host 8080.
 app.listen(8080);

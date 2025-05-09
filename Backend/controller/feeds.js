@@ -1,16 +1,30 @@
 // Controller to respond to the GET -> /feeds/posts url in the applicaton.
 exports.getPosts = (req, res, next) => {
     res.status(200).json({
-        posts: [{
-            "_id": '1',
-            "title": "My First social media feed",
-            "content": "This is the content created using the REST principles",
-            "image": "images/content.png",
-            "creator": {
-                "name": "SAI",
+        posts: [
+            {
+                "_id": "1",
+                "title": "My First social media feed",
+                "imageUrl": "images/content.png",
+                "content": "This is the content created using the REST principles - 1",
+                "creator":  
+                {
+                    "name": "SAI"
+                },
+                "createdAt": new Date(),
             },
-            "createdAt": new Date(),
-        }]
+            {
+                "_id": "2",
+                "title": "My Second social media feed",
+                "imageUrl": "images/content.png",
+                "content": "This is the content created using the REST principles - 2",
+                "creator":  
+                {
+                    "name": "SAI"
+                },
+                "createdAt": new Date(),
+            }
+    ]
     });
 }
 
