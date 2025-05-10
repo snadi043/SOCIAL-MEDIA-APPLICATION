@@ -30,16 +30,19 @@ exports.getPosts = (req, res, next) => {
 
 // Controller to respond to the POST -> /feeds/post url in the applicaton.
 exports.createPosts = (req, res, next) => {
+    // The title and the content are retrieved from the form inputs in the application.
     const title = req.body.title;
     const content = req.body.content;
     res.status(201).json({
         message: 'A new post is created',
-        method: 'POST',
-        body: {
-        posts: {
+        post: {
+            _id: new Date().toISOString(),
             title: title,
-            content: content
+            content: content,
+            creator: {
+                name: 'SAI' // For now creator and createdAt will be hardcoded until the database is configured.
+            },
+            createdAt: new Date()
         }
-    }
     });
 }
