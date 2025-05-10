@@ -104,23 +104,41 @@ class Feed extends Component {
   };
 
   finishEditHandler = postData => {
+    console.log(postData);
     this.setState({
       editLoading: true
     });
+
     // Set up data (with image!)
-    let url = 'URL';
+    let url = 'http://localhost:8080/feeds/post'; // URL to add a new feed/post to the application.
+    let method = 'POST';
+    // Condition to check if the user wants to edit the post, also then, access the same URL.
     if (this.state.editPost) {
       url = 'URL';
     }
-
-    fetch(url)
+    // This is the same URL to create the new post and also to this URL we have to configure the headers
+    fetch(url, {
+        method: method,
+        // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: postData.title,
+          content: postData.content,
+          // 'creator': postData.creator,
+          // 'createdAt': postData.createdAt
+        }),
+    })
       .then(res => {
+        console.log(res);
         if (res.status !== 200 && res.status !== 201) {
           throw new Error('Creating or editing a post failed!');
         }
         return res.json();
       })
       .then(resData => {
+        console.log(resData);
         const post = {
           _id: resData.post._id,
           title: resData.post.title,
