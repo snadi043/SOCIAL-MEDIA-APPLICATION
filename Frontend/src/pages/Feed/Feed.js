@@ -104,7 +104,6 @@ class Feed extends Component {
   };
 
   finishEditHandler = postData => {
-    console.log(postData);
     this.setState({
       editLoading: true
     });
@@ -138,7 +137,6 @@ class Feed extends Component {
         return res.json();
       })
       .then(resData => {
-        console.log(resData);
         const post = {
           _id: resData.post._id,
           title: resData.post.title,
@@ -153,7 +151,7 @@ class Feed extends Component {
               p => p._id === prevState.editPost._id
             );
             updatedPosts[postIndex] = post;
-          } else if (prevState.posts.length < 2) {
+          } else if (prevState.posts.length < 4) {
             updatedPosts = prevState.posts.concat(post);
           }
           return {
@@ -189,7 +187,6 @@ class Feed extends Component {
         return res.json();
       })
       .then(resData => {
-        console.log(resData);
         this.setState(prevState => {
           const updatedPosts = prevState.posts.filter(p => p._id !== postId);
           return { posts: updatedPosts, postsLoading: false };

@@ -1,3 +1,6 @@
+// Configuring the express-validator provided "validationResult" object to register the package to handle the validation tasks.
+const { validationResult } = require('express-validator');
+
 // Controller to respond to the GET -> /feeds/posts url in the applicaton.
 exports.getPosts = (req, res, next) => {
     res.status(200).json({
@@ -30,6 +33,18 @@ exports.getPosts = (req, res, next) => {
 
 // Controller to respond to the POST -> /feeds/post url in the applicaton.
 exports.createPosts = (req, res, next) => {
+    // In-order to enable the validationResult method code block, always initiate it before the execution of the input fields parsing procedure.
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(422).render('feeds/post', {
+            errorMessage: 'Invalid charecter length entered in Title or Content fields.',
+            errorArray: errors.array(),
+            errorFields: {
+                title: title,
+                content: content,
+            }
+        });
+    }
     // The title and the content are retrieved from the form inputs in the application.
     const title = req.body.title;
     const content = req.body.content;
