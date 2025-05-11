@@ -17,7 +17,7 @@ router.get('/posts', feedsController.getPosts);
 // Configuring the "POST" route to sanatize and maintain consistentency in the data which is to be accepted in the application with set of error validation filters.
 router.post('/post', 
     [
-        body('title').isString().isLength({min: 7}).trim().withMessage('Please enter a title with at least 5 charecters'),
+        body('title').isString().isLength({min: 5}).trim().withMessage('Please enter a title with at least 5 charecters'),
         body('content').isString().isLength({min: 5}).trim().withMessage('Please eneter the content with at least 5 charecters'),
     ],
     feedsController.createPosts);
