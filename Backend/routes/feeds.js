@@ -13,6 +13,10 @@ const router = express.Router();
 // GET -> /feeds/post
 router.get('/posts', feedsController.getPosts);
 
+// GET -> /feeds/post/:postId
+// This is the route to render a single post/feed in the application.
+router.get('/post/:postId', feedsController.getPost);
+
 // POST -> /feeds/post
 // Configuring the "POST" route to sanatize and maintain consistentency in the data which is to be accepted in the application with set of error validation filters.
 router.post('/post', 

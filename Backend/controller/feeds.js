@@ -6,31 +6,45 @@ const { validationResult } = require('express-validator');
 
 // Controller to respond to the GET -> /feeds/posts url in the applicaton.
 exports.getPosts = (req, res, next) => {
-    res.status(200).json({
-        posts: [
-            {
-                "_id": "1",
-                "title": "My First social media feed",
-                "imageUrl": "images/content.png",
-                "content": "This is the content created using the REST principles - 1",
-                "creator":  
-                {
-                    "name": "SAI"
-                },
-                "createdAt": new Date(),
-            },
-            {
-                "_id": "2",
-                "title": "My Second social media feed",
-                "imageUrl": "images/content.png",
-                "content": "This is the content created using the REST principles - 2",
-                "creator":  
-                {
-                    "name": "SAI"
-                },
-                "createdAt": new Date(),
+    Feeds.find().then(posts => {
+        if(!posts){
+            const error = new Error('Unable to find the posts');
+            error.statusCode = 404;
+            throw error;
+        }
+        res.status(200).json({
+            message: 'Successfully Fetched the posts',
+            posts: posts
+        });
+        }).catch(err => {
+            if(!err.statusCode){
+                err.statusCode = 500;
             }
-    ]
+            next(err);
+    });
+}
+
+// Controller to respond to the GET => /feeds/post/:postId url in the application.
+exports.getPost = (req, res, next) => {
+    const postId = req.params.postId;
+    Feeds.findById(postId).then(
+        post => {
+            if(!post){
+                const error = new Error('Unable to find the post');
+                error.status = 404;
+                throw error;
+            }
+            res.status(200).json({
+                message: 'Fetched a single post with '+ postId,
+                post: post
+            });
+        }
+    )
+    .catch(err => {
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
     });
 }
 
