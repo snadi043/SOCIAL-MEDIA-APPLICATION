@@ -1,3 +1,6 @@
+// Importing the models into the controller file to connect to the database.
+const Feeds = require('../models/feeds');
+
 // Configuring the express-validator provided "validationResult" object to register the package to handle the validation tasks.
 const { validationResult } = require('express-validator');
 
@@ -48,16 +51,23 @@ exports.createPosts = (req, res, next) => {
     // The title and the content are retrieved from the form inputs in the application.
     const title = req.body.title;
     const content = req.body.content;
-    res.status(201).json({
-        message: 'A new post is created',
-        post: {
-            _id: new Date().toISOString(),
-            title: title,
-            content: content,
-            creator: {
-                name: 'SAI' // For now creator and createdAt will be hardcoded until the database is configured.
-            },
-            createdAt: new Date()
+    // Configuring the custom Feeds model created using mongoose package here.
+    const post = new Feeds({
+        title: title,
+        content: content,
+        imageUrl: 'images/content.png',
+        creator: {
+            name: 'SAI'
         }
     });
+    // save() -> is the mongoose provided method to be used on the model object which will return a promise.
+        post.save().then(result => {
+            res.status(201).json({
+                message: 'A new post is created',
+                post: result
+            });
+        })
+        .catch(err => {
+            console.log(err);
+        });
 }

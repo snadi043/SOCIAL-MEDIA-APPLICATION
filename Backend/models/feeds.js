@@ -5,10 +5,6 @@ const mongoose =  require('mongoose');
 const Schema = mongoose.Schema;
 
 const feedsSchema = new Schema({
-        _id: {
-            type: ObjectId, // ObjectId('') -> Special Data-Type supported by the mongoose package to create a unique ID in the mongoDB.
-            required: true
-        },
         title: {
             type: String,
             required: true,
