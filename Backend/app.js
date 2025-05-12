@@ -1,11 +1,12 @@
 // Initializing the install express package to use it in the application.
 const express = require('express');
 
+// Importing the express provided path package to build the static paths in the application.
+const path =  require('path');
+
 // URL -> mongoDB collection.
 // const DB_URL = 'mongodb+srv://NodeMongo:node-mongo-integration@node-mongo-integration.025ge.mongodb.net/feeds?w=majority&appName=social-media-application';
 const DB_URL = 'mongodb+srv://snadi043:socialmedia@cluster0.ajq0d3q.mongodb.net/feeds?w=majority&appName=social-media-application';
-// // Importing the mongoDB package in the application.
-// const mongodb = require('mongodb');
 
 // Importing the mongoose package in the application to configure it with the mongodb package.
 const mongoose = require('mongoose');
@@ -22,6 +23,9 @@ const app = express();
 // Middleware to use the body-parser to parse the json format data in the application.
 app.use(bodyParser.json());
 
+// Middleware to construct a static path for the images in the application.
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
 // Middleware to configure the necessary application server based settings to avoid interuptions while building the application.
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -34,6 +38,14 @@ app.use((req, res, next) => {
 // Middleware to register the routes with the '/feeds' filter/flag to create and access the routes.
 app.use('/feeds', feedsRoutes);
 
+// Configuring the middlware to catch the global errors and customize the errors in the application.
+app.use((error, req, res, next) => {
+    console.log(error);
+    const status = error.statusCode || 500;
+    res.status(status).json({
+        message: error.message,
+    });
+});
 // Configuring the mongDB in the backend node code with the database.
 mongoose.connect(DB_URL).then(result => {
     // Configuring the application server to respond/listen on the host 8080.

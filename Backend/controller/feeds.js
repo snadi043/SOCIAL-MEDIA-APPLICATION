@@ -39,14 +39,9 @@ exports.createPosts = (req, res, next) => {
     // In-order to enable the validationResult method code block, always initiate it before the execution of the input fields parsing procedure.
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-        return res.status(422).render('feeds/post', {
-            errorMessage: 'Invalid charecter length entered in Title or Content fields.',
-            errorArray: errors.array(),
-            errorFields: {
-                title: title,
-                content: content,
-            }
-        });
+        const error = new Error('Invalid charecter length entered in Title or Content fields.');
+        error.statusCode = 422 // Optional parameters can be set to the global error method.
+        throw error; 
     }
     // The title and the content are retrieved from the form inputs in the application.
     const title = req.body.title;
@@ -68,6 +63,9 @@ exports.createPosts = (req, res, next) => {
             });
         })
         .catch(err => {
-            console.log(err);
+            if(!err.statusCode){
+                err.statusCode = 500
+            }
+            next(err);
         });
 }
