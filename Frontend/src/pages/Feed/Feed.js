@@ -111,6 +111,11 @@ class Feed extends Component {
     // Set up data (with image!)
     let url = 'http://localhost:8080/feeds/post'; // URL to add a new feed/post to the application.
     let method = 'POST';
+    // Initiating the formData which has the ability to handle multpile data points from the form inputs like texts and files. 
+    const formData = new FormData();
+    formData.append('title', postData.title); // Key and the data property value.
+    formData.append('content', postData.content);
+    formData.append('images', postData.image)
     // Condition to check if the user wants to edit the post, also then, access the same URL.
     if (this.state.editPost) {
       url = 'URL';
@@ -119,15 +124,7 @@ class Feed extends Component {
     fetch(url, {
         method: method,
         // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: postData.title,
-          content: postData.content,
-          // 'creator': postData.creator,
-          // 'createdAt': postData.createdAt
-        }),
+        body: formData,
     })
       .then(res => {
         console.log(res);
