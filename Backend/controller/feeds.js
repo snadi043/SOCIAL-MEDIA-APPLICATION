@@ -57,14 +57,21 @@ exports.createPosts = (req, res, next) => {
         error.statusCode = 422 // Optional parameters can be set to the global error method.
         throw error; 
     }
+    // Checking for the condition if the file format/type is not present in the response from the body parameters to avoid errors.
+    if(!req.file){
+        const error = new Error('Unable to fetch the image');
+        error.statusCode = 422;
+        throw error;
+    }
     // The title and the content are retrieved from the form inputs in the application.
     const title = req.body.title;
     const content = req.body.content;
+    const imageUrl = req.body.image;
     // Configuring the custom Feeds model created using mongoose package here.
     const post = new Feeds({
         title: title,
         content: content,
-        imageUrl: 'images/content.png',
+        imageUrl: imageUrl,
         creator: {
             name: 'SAI'
         }
