@@ -26,5 +26,15 @@ router.post('/post',
     ],
     feedsController.createPosts);
 
+// PUT -> /feeds/post/:postId
+// Configuring the "PUT" method which is accepted by the javascript  fetch API to update a document and also to sanatize and maintain consistentency in the data 
+// which is to be accepted in the application with set of error validation filters.
+router.put('/post/:postId',
+    [
+        body('title').isString().isLength({min: 5}).trim().withMessage('Please enter a title with at least 5 charecters'),
+        body('content').isString().isLength({min: 5}).trim().withMessage('Please eneter the content with at least 5 charecters'),
+    ], 
+    feedsController.editPost);
+
 // exporting the module to use it in the application as a centralized router.
 module.exports = router;
