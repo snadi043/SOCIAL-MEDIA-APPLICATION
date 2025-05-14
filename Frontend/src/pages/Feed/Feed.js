@@ -61,7 +61,12 @@ class Feed extends Component {
       })
       .then(resData => {
         this.setState({
-          posts: resData.posts,
+          posts: resData.posts.map(post => {
+            return {
+              ...post,
+              imagePath: post.imageUrl
+          };
+        }),
           totalPosts: resData.totalItems,
           postsLoading: false
         });
@@ -107,18 +112,18 @@ class Feed extends Component {
     this.setState({
       editLoading: true
     });
-
-    // Set up data (with image!)
-    let url = 'http://localhost:8080/feeds/post'; // URL to add a new feed/post to the application.
-    let method = 'POST';
     // Initiating the formData which has the ability to handle multpile data points from the form inputs like texts and files. 
     const formData = new FormData();
     formData.append('title', postData.title); // Key and the data property value.
     formData.append('content', postData.content);
-    formData.append('images', postData.image)
+    formData.append('image', postData.image);
+    // Set up data (with image!)
+    let url = 'http://localhost:8080/feeds/post'; // URL to add a new feed/post to the application.
+    let method = 'POST';
     // Condition to check if the user wants to edit the post, also then, access the same URL.
     if (this.state.editPost) {
-      url = 'URL';
+      url = 'http://localhost:8080/feeds/post/' + this.state.editPost._id;
+      method = 'PUT';
     }
     // This is the same URL to create the new post and also to this URL we have to configure the headers
     fetch(url, {
@@ -127,7 +132,6 @@ class Feed extends Component {
         body: formData,
     })
       .then(res => {
-        console.log(res);
         if (res.status !== 200 && res.status !== 201) {
           throw new Error('Creating or editing a post failed!');
         }
