@@ -9,24 +9,24 @@ const multer = require('multer');
 
 // Configuring the FileStorage to handle the user file upload feature in the application.
 const fileStorage = multer.diskStorage({
-    destination: function(req, res, cb){
-        cb(nulll, 'images');
+    destination: (req, file, cb) => {
+        cb(null, 'images');
     },
-    filename: function(req, file, cb) {
-        const fileName = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    filename: (req, file, cb) => {
+        const fileName = new Date().toISOString() + '-' + file.originalname;
         cb(null, file.fieldname + '-' + fileName);
     }
 });
 
 // Configuring the fileFilter property to seed it to the multer method to control the format of the files in the application.
 const fileFilter = (req, file, cb) => {
-    if(file.mimetype === 'images/png' || file.mimetype === 'images/jpg' || file.mimetype === 'images/jpeg'){
+    if(file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'){
         cb(null, true);
     }
     else{
         cb(null, false);
     }
-}
+};
 
 // URL -> mongoDB collection.
 // const DB_URL = 'mongodb+srv://NodeMongo:node-mongo-integration@node-mongo-integration.025ge.mongodb.net/feeds?w=majority&appName=social-media-application';
@@ -51,7 +51,7 @@ app.use(bodyParser.json());
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Configuring the multer middleware with all the necessary properties enabled to accept the single file at a time in the applicaiton.
-app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('images'));
+app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'));
 
 // Middleware to configure the necessary application server based settings to avoid interuptions while building the application.
 app.use((req, res, next) => {
