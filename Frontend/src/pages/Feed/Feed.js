@@ -52,7 +52,7 @@ class Feed extends Component {
       this.setState({ postPage: page });
     }
     // URL to GET the feeds from the database(mongoDB) eventually to render on to the UI.
-    fetch('http://localhost:8080/feeds/posts')
+    fetch('http://localhost:8080/feeds/posts?page=' + page)
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch posts.');

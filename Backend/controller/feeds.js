@@ -12,21 +12,27 @@ const { validationResult } = require('express-validator');
 
 // Controller to respond to the GET -> /feeds/posts url in the applicaton.
 exports.getPosts = (req, res, next) => {
-    Feeds.find().then(posts => {
-        if(!posts){
-            const error = new Error('Unable to find the posts');
-            error.statusCode = 404;
-            throw error;
-        }
+    const pageCount = req.query.page || 1; // This is the value for rendering the list of posts per page
+    const perPage = 2;
+    let totalItems;
+    Feeds.find().countDocuments().then(postPerPage => {
+        totalItems = postPerPage;
+        return Feeds.find()
+        .skip((pageCount - 1) * perPage)
+        .limit(perPage)
+    })
+    .then(posts => {
         res.status(200).json({
             message: 'Successfully Fetched the posts',
-            posts: posts
+            posts: posts,
+            totalItems: totalItems
         });
-        }).catch(err => {
-            if(!err.statusCode){
-                err.statusCode = 500;
-            }
-            next(err);
+    })
+    .catch(err => {
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
     });
 }
 
