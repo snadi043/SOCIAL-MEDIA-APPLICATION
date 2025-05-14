@@ -152,3 +152,30 @@ const deleteImage = (filePath) => {
     filePath = path.join(__dirname, '..', filePath);
     fs.unlink(filePath, err => console.log(err));
 };
+
+// Controller to respond to the GET -> /feeds/post url in the applicaton.
+exports.deletePost = (req, res, next) => {
+    const postId = req.params.postId;
+    Feeds.findById(postId)
+    .then(post => {
+        if(!post){
+            const error = new Error('Unable to find the post to delete');
+            error.statusCode = 422;
+            throw error;
+        }
+            deleteImage(post.imageUrl);
+            return Feeds.findByIdAndDelete(postId);
+    })
+    .then(result => {
+        console.log(result);
+        res.status(200).json({
+            message: 'Post deleted suceessfully',
+        });
+    })
+    .catch(err => {
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+}

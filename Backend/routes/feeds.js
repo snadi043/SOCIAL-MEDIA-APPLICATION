@@ -36,5 +36,10 @@ router.put('/post/:postId',
     ], 
     feedsController.editPost);
 
+// DELETE -> /feeds/post/:postId
+// Configuring the "DELETE" method which is accepted by the javascript  fetch API to update a document and also to sanatize and maintain consistentency in the data 
+// which is to be accepted in the application with set of error validation filters.
+router.delete('/post/:postId', feedsController.deletePost);
+
 // exporting the module to use it in the application as a centralized router.
 module.exports = router;
