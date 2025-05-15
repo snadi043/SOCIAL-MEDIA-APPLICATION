@@ -17,7 +17,7 @@ const userSchema = Schema({
     },
     status: {
         type: String,
-        required: true
+        default: 'I am a new user'
     },
     posts: [
         {
