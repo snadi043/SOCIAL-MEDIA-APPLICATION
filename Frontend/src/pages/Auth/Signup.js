@@ -24,7 +24,7 @@ class Signup extends Component {
         value: '',
         valid: false,
         touched: false,
-        validators: [required]
+        validators: [required, length({ min: 5 })]
       },
       formIsValid: false
     }

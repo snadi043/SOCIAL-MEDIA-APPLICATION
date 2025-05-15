@@ -17,7 +17,7 @@ class App extends Component {
   state = {
     showBackdrop: false,
     showMobileNav: false,
-    isAuth: true,
+    isAuth: false,
     token: null,
     userId: null,
     authLoading: false,
@@ -56,10 +56,11 @@ class App extends Component {
     localStorage.removeItem('userId');
   };
 
+  // URL to handle the user login and authentication.
   loginHandler = (event, authData) => {
     event.preventDefault();
     this.setState({ authLoading: true });
-    fetch('URL')
+    fetch('http://localhost:8080/auth/login')
       .then(res => {
         if (res.status === 422) {
           throw new Error('Validation failed.');
@@ -97,10 +98,22 @@ class App extends Component {
       });
   };
 
+  // URL to handle the Signing users into the application. 
   signupHandler = (event, authData) => {
+    console.log(authData);
     event.preventDefault();
     this.setState({ authLoading: true });
-    fetch('URL')
+    fetch('http://localhost:8080/auth/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: authData.signupForm.email.value,
+        name: authData.signupForm.name.value,
+        password: authData.signupForm.password.value
+      }),
+    })
       .then(res => {
         if (res.status === 422) {
           throw new Error(
