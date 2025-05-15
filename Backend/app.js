@@ -40,6 +40,7 @@ const bodyParser = require('body-parser');
 
 // Importing the routes file to update it in the whole application.
 const feedsRoutes = require('./routes/feeds');
+const userRoutes = require('./routes/user');
 
 // Initializing the app with express.
 const app = express();
@@ -64,6 +65,7 @@ app.use((req, res, next) => {
 // Always make use the routes middleware is build after the response headers are set.
 // Middleware to register the routes with the '/feeds' filter/flag to create and access the routes.
 app.use('/feeds', feedsRoutes);
+app.use('/auth', userRoutes);
 
 // Configuring the middlware to catch the global errors and customize the errors in the application.
 app.use((error, req, res, next) => {
@@ -71,6 +73,7 @@ app.use((error, req, res, next) => {
     const status = error.statusCode || 500;
     res.status(status).json({
         message: error.message,
+        data: error.data
     });
 });
 // Configuring the mongDB in the backend node code with the database.
