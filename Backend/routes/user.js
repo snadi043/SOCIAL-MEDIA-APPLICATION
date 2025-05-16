@@ -45,4 +45,24 @@ router.post('/signup',
     ], 
     userController.postUserSignUp);
 
+router.post('/login',
+    [
+        body('email')
+        .isEmail()
+        .isLength({min: 7})
+        .withMessage('Please enter a valid email.')
+        .normalizeEmail(),
+        body('password') 
+        .isString()
+        .trim()
+        .isLength({min: 5})
+        .withMessage('Please enter a valid password.')
+        .custom((value, {req}) => {
+            if(value != req.body.password){
+                throw new Error('Please enter a password with atleast 5 charecters');
+            }
+        }),
+    ], 
+    userController.postUserLogin)
+
 module.exports = router;
