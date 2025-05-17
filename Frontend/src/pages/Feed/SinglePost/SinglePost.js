@@ -18,7 +18,13 @@ class SinglePost extends Component {
   componentDidMount() {
     const postId = this.props.match.params.postId;
     // The url here has to have the filter for individual feed which is similar to 'http://localhost:8080/feeds/post/:postId'
-    fetch('http://localhost:8080/feeds/post/' + postId)
+    fetch('http://localhost:8080/feeds/post/' + postId,
+      {
+      headers: {
+        Authorization: 'bearer ' + this.props.token,
+      }
+    }
+    )
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch status');

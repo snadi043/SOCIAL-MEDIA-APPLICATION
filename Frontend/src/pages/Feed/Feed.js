@@ -52,7 +52,11 @@ class Feed extends Component {
       this.setState({ postPage: page });
     }
     // URL to GET the feeds from the database(mongoDB) eventually to render on to the UI.
-    fetch('http://localhost:8080/feeds/posts?page=' + page)
+    fetch('http://localhost:8080/feeds/posts?page=' + page, {
+      headers: {
+        Authorization: 'bearer ' + this.props.token,
+      }
+    })
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch posts.');
@@ -125,11 +129,17 @@ class Feed extends Component {
       method = 'PUT';
     }
     // This is the same URL to create the new post and also to this URL we have to configure the headers
-    fetch(url, {
-        method: method,
-        // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
-        body: formData,
-    })
+    fetch(url,
+      {
+      headers: {
+        Authorization: 'bearer ' + this.props.token,
+      }
+      },
+      {
+          method: method,
+          // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
+          body: formData,
+      })
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error('Creating or editing a post failed!');
@@ -179,7 +189,12 @@ class Feed extends Component {
 
   deletePostHandler = postId => {
     this.setState({ postsLoading: true });
-    fetch('http://localhost:8080/feeds/post/' + postId, 
+    fetch('http://localhost:8080/feeds/post/' + postId,
+      {
+      headers: {
+        Authorization: 'bearer ' + this.props.token,
+      }
+    }, 
     {
       method: 'DELETE'
     })
