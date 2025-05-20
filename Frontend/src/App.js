@@ -1,3 +1,4 @@
+
 import React, { Component, Fragment } from 'react';
 import { Route, Switch, Redirect, withRouter } from 'react-router-dom';
 
@@ -68,7 +69,7 @@ class App extends Component {
       body: JSON.stringify({
         email: authData.email,
         password: authData.password
-      }),
+      })
     })
       .then(res => {
         if (res.status === 422) {
@@ -109,19 +110,18 @@ class App extends Component {
 
   // URL to handle the Signing users into the application. 
   signupHandler = (event, authData) => {
-    console.log(authData);
     event.preventDefault();
     this.setState({ authLoading: true });
     fetch('http://localhost:8080/auth/signup', {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         email: authData.signupForm.email.value,
-        name: authData.signupForm.name.value,
-        password: authData.signupForm.password.value
-      }),
+        password: authData.signupForm.password.value,
+        name: authData.signupForm.name.value
+      })
     })
       .then(res => {
         if (res.status === 422) {

@@ -1,3 +1,4 @@
+
 import React, { Component, Fragment } from 'react';
 
 import Post from '../../components/Feed/Post/Post';
@@ -21,9 +22,9 @@ class Feed extends Component {
     editLoading: false
   };
 
+  // URL to fetch the user to authenticate the access to the user before using the application.
   componentDidMount() {
-    // URL to fetch the user to authenticate the access to the user before using the application.
-    fetch('')
+    fetch('URL')
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch user status.');
@@ -37,6 +38,7 @@ class Feed extends Component {
 
     this.loadPosts();
   }
+
   // Logic for the pagination in the application followed by getting the feeds into the application.
   loadPosts = direction => {
     if (direction) {
@@ -54,7 +56,7 @@ class Feed extends Component {
     // URL to GET the feeds from the database(mongoDB) eventually to render on to the UI.
     fetch('http://localhost:8080/feeds/posts?page=' + page, {
       headers: {
-        Authorization: 'bearer ' + this.props.token,
+        Authorization: 'Bearer ' + this.props.token
       }
     })
       .then(res => {
@@ -69,8 +71,8 @@ class Feed extends Component {
             return {
               ...post,
               imagePath: post.imageUrl
-          };
-        }),
+            };
+          }),
           totalPosts: resData.totalItems,
           postsLoading: false
         });
@@ -100,6 +102,7 @@ class Feed extends Component {
   startEditPostHandler = postId => {
     this.setState(prevState => {
       const loadedPost = { ...prevState.posts.find(p => p._id === postId) };
+
       return {
         isEditing: true,
         editPost: loadedPost
@@ -117,29 +120,26 @@ class Feed extends Component {
     });
     // Initiating the formData which has the ability to handle multpile data points from the form inputs like texts and files. 
     const formData = new FormData();
-    formData.append('title', postData.title); // Key and the data property value.
+    formData.append('title', postData.title);
     formData.append('content', postData.content);
     formData.append('image', postData.image);
     // Set up data (with image!)
     let url = 'http://localhost:8080/feeds/post'; // URL to add a new feed/post to the application.
-    let method = 'POST';
     // Condition to check if the user wants to edit the post, also then, access the same URL.
+    let method = 'POST';
     if (this.state.editPost) {
       url = 'http://localhost:8080/feeds/post/' + this.state.editPost._id;
       method = 'PUT';
     }
-    // This is the same URL to create the new post and also to this URL we have to configure the headers
-    fetch(url,
-      {
+  // This is the same URL to create the new post and also to this URL we have to configure the headers
+    fetch(url, {
+      method: method,
+      body: formData,
+  // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
       headers: {
-        Authorization: 'bearer ' + this.props.token,
+        Authorization: 'Bearer ' + this.props.token
       }
-      },
-      {
-          method: method,
-          // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
-          body: formData,
-      })
+    })
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error('Creating or editing a post failed!');
@@ -147,6 +147,7 @@ class Feed extends Component {
         return res.json();
       })
       .then(resData => {
+        console.log(resData);
         const post = {
           _id: resData.post._id,
           title: resData.post.title,
@@ -161,7 +162,7 @@ class Feed extends Component {
               p => p._id === prevState.editPost._id
             );
             updatedPosts[postIndex] = post;
-          } else if (prevState.posts.length < 4) {
+          } else if (prevState.posts.length < 2) {
             updatedPosts = prevState.posts.concat(post);
           }
           return {
@@ -189,14 +190,11 @@ class Feed extends Component {
 
   deletePostHandler = postId => {
     this.setState({ postsLoading: true });
-    fetch('http://localhost:8080/feeds/post/' + postId,
-      {
+    fetch('http://localhost:8080/feeds/post/' + postId, {
+      method: 'DELETE',
       headers: {
-        Authorization: 'bearer ' + this.props.token,
+        Authorization: 'Bearer ' + this.props.token
       }
-    }, 
-    {
-      method: 'DELETE'
     })
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
@@ -205,6 +203,7 @@ class Feed extends Component {
         return res.json();
       })
       .then(resData => {
+        console.log(resData);
         this.setState(prevState => {
           const updatedPosts = prevState.posts.filter(p => p._id !== postId);
           return { posts: updatedPosts, postsLoading: false };
