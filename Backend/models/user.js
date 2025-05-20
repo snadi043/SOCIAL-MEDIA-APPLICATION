@@ -22,9 +22,9 @@ const userSchema = Schema({
     posts: [
         {
             type: Schema.Types.ObjectId,
-            ref: 'feeds'
+            ref: 'Feeds'
         }
     ],
 });
 
-module.exports = mongoose.model('user', userSchema);
+module.exports = mongoose.model('User', userSchema);

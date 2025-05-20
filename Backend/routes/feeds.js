@@ -2,7 +2,7 @@
 const express = require('express');
 
 // Importing the controller file to use it in the application to perform the logic/action for the specific routes.
-const feedsController = require('../controller/feeds');
+const feedsController = require('../controllers/feeds');
 
 // Initializing the express-validator package to configure and utilize it in the application.
 const {body} = require('express-validator'); 

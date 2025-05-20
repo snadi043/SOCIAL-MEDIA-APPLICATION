@@ -10,7 +10,8 @@ const feedsSchema = new Schema({
             required: true,
         },
         creator: {
-            type: Object,
+            type: Schema.Types.ObjectId,
+            ref: 'User',
             required: true,
         },
         content: {
@@ -26,4 +27,4 @@ const feedsSchema = new Schema({
     {timeStamps: true} 
 );
 
-module.exports = mongoose.model('feeds', feedsSchema);
+module.exports = mongoose.model('Feeds', feedsSchema);

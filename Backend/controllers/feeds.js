@@ -6,6 +6,7 @@ const path = require('path');
 
 // Importing the models into the controller file to connect to the database.
 const Feeds = require('../models/feeds');
+const User = require('../models/user');
 
 // Configuring the express-validator provided "validationResult" object to register the package to handle the validation tasks.
 const { validationResult } = require('express-validator');
@@ -79,20 +80,27 @@ exports.createPosts = (req, res, next) => {
     const title = req.body.title;
     const content = req.body.content;
     const imageUrl = req.file.path;
+    let creator;
     // Configuring the custom Feeds model created using mongoose package here.
     const post = new Feeds({
         title: title,
         content: content,
         imageUrl: imageUrl,
-        creator: {
-            name: 'SAI'
-        }
+        creator: req.userId,
     });
     // save() -> is the mongoose provided method to be used on the model object which will return a promise.
         post.save().then(result => {
-            res.status(201).json({
+            User.findById(req.userId)
+            .then(user => {
+                creator = user;
+                user.posts.push(post);
+                return user.save();
+            })
+            .then(result => {
+                res.status(201).json({
                 message: 'A new post is created',
-                post: result
+                post: post,
+                creator: {_id: creator._id, name: creator.name}
             });
         })
         .catch(err => {
@@ -101,6 +109,7 @@ exports.createPosts = (req, res, next) => {
             }
             next(err);
         });
+    });
 }
 
 // Controller to respond to the PUT -> /feeds/post/:postId url in the applicaton.
@@ -128,6 +137,11 @@ exports.editPost = (req, res, next) => {
         if(!post){
             const error = new Error('Unable to find the post with an ' + postId);
             error.statusCode = 404;
+            throw error;
+        }
+        if(post.creator.toString() !== req.userId){
+            const error = new Error('User access not allowed. Unable to edit the post');
+            error.statusCode = 403;
             throw error;
         }
         if(imageUrl !== post.imageUrl){
@@ -167,6 +181,11 @@ exports.deletePost = (req, res, next) => {
         if(!post){
             const error = new Error('Unable to find the post to delete');
             error.statusCode = 422;
+            throw error;
+        }
+        if(post.creator.toString() !== req.userId){
+            const error = new Error('User access not allowed. Unable to edit the post');
+            error.statusCode = 403;
             throw error;
         }
             deleteImage(post.imageUrl);
