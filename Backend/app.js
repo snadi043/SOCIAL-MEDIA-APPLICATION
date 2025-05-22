@@ -78,8 +78,24 @@ app.use((error, req, res, next) => {
 });
 // Configuring the mongDB in the backend node code with the database.
 mongoose.connect(DB_URL).then(result => {
+    // web socket is the feature which is helpful in building the real-time updating mechanism in the applications.
+    // Generally, the flow of the applications are like the client request for the data which is pulled from the server with the help of database.
+    // On the other hand, let's assume a case where there is a requirement to the application to send the information from the server to the client.
+    // For example, a messaging or notification system, the client may not be able to send request every single time to know the updates on the 
+        // messages or notifications in the applications as it becomes too cumbersome and demands lot of work from the servers and creates performance issues.
+    // To avoid these drawbacks we integrate the resource called web sockets into our applications. One of the best packages to implement this mechanism is "socket.io".
+    // Web sockets are capable of doing the interactions in both ways i,e pull(client -> server) and importantly also push(server -> client).
+    // This mechanism is configured using the HTTP server in the backend and also by another package which has to be installed in the client side to do the heavy lifting.
+
     // Configuring the application server to respond/listen on the host 8080.
-    app.listen(8080);
-}).catch(err => {
+    const server = app.listen(8080);
+    
+    // Importing the socket.js file which has the re-usable module and accessing the init() method to initialize the server.
+    const io = require('./socket').init(server);
+    // Here on the "io" the socket.io provides with action methods like on() to create the connection to the client-side of the application.
+    io.on('connection', (socket) => {
+        console.log('Connected to the socket successfully.');
+    });
+    }).catch(err => {
     console.log(err);
 });
