@@ -1,6 +1,9 @@
 
 import React, { Component, Fragment } from 'react';
 
+// Importing the socket.io-client pakcage in the client-side of the application in the feed.js file.
+import openSocket from 'socket.io-client';
+
 import Post from '../../components/Feed/Post/Post';
 import Button from '../../components/Button/Button';
 import FeedEdit from '../../components/Feed/FeedEdit/FeedEdit';
@@ -37,6 +40,26 @@ class Feed extends Component {
       .catch(this.catchError);
 
     this.loadPosts();
+    // Here we connect the client-side to the backend (serve-side) of the application by passing the backend localhost of our application.
+    openSocket('http://localhost:8080');
+  }
+
+  // addPosts() is the function which is designed to render the posts on the browser without reloading the page
+  // as soon as the post is added by the user in the application.
+  addPosts = (post) => {
+    this.setState(prevState => {
+  const updatedPosts = [...prevState.posts];
+  if (prevState.postPage === 1) {
+    if (prevState.posts.length >= 2) {
+      updatedPosts.pop();
+    }
+    updatedPosts.unshift(post);
+  }
+  return {
+    posts: updatedPosts,
+    totalPosts: prevState.totalPosts + 1
+  };  
+  });
   }
 
   // Logic for the pagination in the application followed by getting the feeds into the application.
