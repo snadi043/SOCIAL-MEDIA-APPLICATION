@@ -1,6 +1,9 @@
 // Importing the fileSystem package to construct the filepath.
 const fs = require('fs');
 
+// Importing the socket.js file to use it in order to push the data to the users after the post is created.
+const io = require('../socket');
+
 // Importing the path package to create the path.
 const path = require('path');
 
@@ -12,37 +15,34 @@ const User = require('../models/user');
 const { validationResult } = require('express-validator');
 
 // Controller to respond to the GET -> /feeds/posts url in the applicaton.
-exports.getPosts = (req, res, next) => {
+exports.getPosts = async (req, res, next) => {
     const pageCount = req.query.page || 1; // This is the value for rendering the list of posts per page
     const perPage = 2;
-    let totalItems;
-    Feeds.find().countDocuments().then(postPerPage => {
-        totalItems = postPerPage;
-        return Feeds.find()
-        .skip((pageCount - 1) * perPage)
-        .limit(perPage)
-    })
-    .then(posts => {
-        res.status(200).json({
-            message: 'Successfully Fetched the posts',
-            posts: posts,
-            totalItems: totalItems
-        });
-    })
-    .catch(err => {
+    try{
+        const totalItems = await Feeds.find().countDocuments();
+        const posts = await Feeds.find()
+            .skip((pageCount - 1) * perPage)
+            .limit(perPage);
+            res.status(200).json({
+                message: 'Successfully Fetched the posts',
+                posts: posts,
+                totalItems: totalItems
+            });
+    }
+    catch(err){
         if(!err.statusCode){
             err.statusCode = 500;
         }
         next(err);
-    });
+    }
 }
 
 // Controller to respond to the GET => /feeds/post/:postId url in the application.
-exports.getPost = (req, res, next) => {
+exports.getPost = async (req, res, next) => {
     const postId = req.params.postId;
-    Feeds.findById(postId).then(
-        post => {
-            if(!post){
+    const post = await Feeds.findById(postId);
+    try{
+        if(!post){
                 const error = new Error('Unable to find the post');
                 error.status = 404;
                 throw error;
@@ -52,17 +52,16 @@ exports.getPost = (req, res, next) => {
                 post: post
             });
         }
-    )
-    .catch(err => {
+    catch(err){
         if(!err.statusCode){
             err.statusCode = 500;
         }
         next(err);
-    });
+    }
 }
 
 // Controller to respond to the POST -> /feeds/post url in the applicaton.
-exports.createPosts = (req, res, next) => {
+exports.createPosts = async (req, res, next) => {
     // In-order to enable the validationResult method code block, always initiate it before the execution of the input fields parsing procedure.
     const errors = validationResult(req);
     if(!errors.isEmpty()){
@@ -89,27 +88,27 @@ exports.createPosts = (req, res, next) => {
         creator: req.userId,
     });
     // save() -> is the mongoose provided method to be used on the model object which will return a promise.
-        post.save().then(result => {
-            User.findById(req.userId)
-            .then(user => {
-                creator = user;
-                user.posts.push(post);
-                return user.save();
-            })
-            .then(result => {
-                res.status(201).json({
-                message: 'A new post is created',
-                post: post,
-                creator: {_id: creator._id, name: creator.name}
-            });
-        })
-        .catch(err => {
-            if(!err.statusCode){
-                err.statusCode = 500
-            }
-            next(err);
-        });
-    });
+    try{
+        await post.save();
+        const user = User.findById(req.userId);
+        user.posts.push(post);
+        await user.save();
+        // Configuring the module from socket.js file to create an object which defines the action and the data properties to send it to the client-side. 
+        // emit() -> is the method provided by the socket.io to send the notifications or data all the users including the user who created it.
+        // broadcast() -> is another method by socket.io which is similar to emit by it doesnot count the user who created it.
+        io.getIO().emit('posts', {action: 'create', post: post});
+        res.status(201).json({
+            message: 'A new post is created',
+            post: post,
+            creator: {_id: creator._id, name: creator.name}
+        });    
+    }
+    catch(err){
+        if(!err.statusCode){
+             err.statusCode = 500
+        }
+        next(err);       
+    }    
 }
 
 // Controller to respond to the PUT -> /feeds/post/:postId url in the applicaton.
