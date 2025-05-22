@@ -41,7 +41,14 @@ class Feed extends Component {
 
     this.loadPosts();
     // Here we connect the client-side to the backend (serve-side) of the application by passing the backend localhost of our application.
-    openSocket('http://localhost:8080');
+    const socket = openSocket('http://localhost:8080');
+    // Here configuring the client-side to the socket.io channel created in the server side which is named as "posts".
+    // On that channel, setting the data property to the the post in the client-side. 
+    socket.on('posts', data => {
+      if(data.action === 'create'){
+        this.addPosts(data.post);
+      }
+    });
   }
 
   // addPosts() is the function which is designed to render the posts on the browser without reloading the page
@@ -185,8 +192,6 @@ class Feed extends Component {
               p => p._id === prevState.editPost._id
             );
             updatedPosts[postIndex] = post;
-          } else if (prevState.posts.length < 2) {
-            updatedPosts = prevState.posts.concat(post);
           }
           return {
             posts: updatedPosts,
