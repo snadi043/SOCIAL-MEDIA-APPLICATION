@@ -48,12 +48,18 @@ class Feed extends Component {
       if(data.action === 'create'){
         this.addPosts(data.post);
       }
+      else if(data.action === 'update'){
+        this.editPost(data.post);
+      }
+      else if(data.action === 'delete'){
+        this.loadPosts();
+      }
     });
   }
 
-  // addPosts() is the function which is designed to render the posts on the browser without reloading the page
+  // addPost() is the function which is designed to render the posts on the browser without reloading the page
   // as soon as the post is added by the user in the application.
-  addPosts = (post) => {
+  addPost = (post) => {
     this.setState(prevState => {
   const updatedPosts = [...prevState.posts];
   if (prevState.postPage === 1) {
@@ -67,6 +73,19 @@ class Feed extends Component {
     totalPosts: prevState.totalPosts + 1
   };  
   });
+  }
+
+  editPost = (post) => {
+    this.setState(prevState => {
+      const updatedPosts = [...prevState.posts];
+      const updatedPostIndex = updatedPosts.findIndex(p => p._id === post._id);
+      if (updatedPostIndex > -1) {
+        updatedPosts[updatedPostIndex] = post;
+      }
+      return {
+        posts: updatedPosts
+      };
+    });
   }
 
   // Logic for the pagination in the application followed by getting the feeds into the application.
@@ -186,15 +205,7 @@ class Feed extends Component {
           createdAt: resData.post.createdAt
         };
         this.setState(prevState => {
-          let updatedPosts = [...prevState.posts];
-          if (prevState.editPost) {
-            const postIndex = prevState.posts.findIndex(
-              p => p._id === prevState.editPost._id
-            );
-            updatedPosts[postIndex] = post;
-          }
           return {
-            posts: updatedPosts,
             isEditing: false,
             editPost: null,
             editLoading: false
@@ -232,10 +243,11 @@ class Feed extends Component {
       })
       .then(resData => {
         console.log(resData);
-        this.setState(prevState => {
-          const updatedPosts = prevState.posts.filter(p => p._id !== postId);
-          return { posts: updatedPosts, postsLoading: false };
-        });
+        this.loadPosts();
+        // this.setState(prevState => {
+        //   const updatedPosts = prevState.posts.filter(p => p._id !== postId);
+        //   return { posts: updatedPosts, postsLoading: false };
+        // });
       })
       .catch(err => {
         console.log(err);
