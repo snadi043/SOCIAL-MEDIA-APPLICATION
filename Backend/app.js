@@ -7,6 +7,13 @@ const path =  require('path');
 // Importing multer package in the application.
 const multer = require('multer');
 
+// Importing the resolvers and the schema objects to configure with the middleware in order to complie the graphql mechanism in the application.
+const graphqlSchema =  require('./graphql/schema');
+const graphqlResolver = require('./graphql/resolvers');
+
+// Importing the createHandler property from the "graphql-http" package to configure with the middleware in order to complie the graphql mechanism in the application.
+const {createHandler} = require('graphql-http/lib/use/http');
+
 // Configuring the FileStorage to handle the user file upload feature in the application.
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -62,10 +69,19 @@ app.use((req, res, next) => {
     next();
 });
 
-// Always make use the routes middleware is build after the response headers are set.
-// Middleware to register the routes with the '/feeds' filter/flag to create and access the routes.
-app.use('/feeds', feedsRoutes);
-app.use('/auth', userRoutes);
+// Middleware to configure the graphql mechanism in the application.
+// "/graphql" -> is the single endpoint which deals with HTTP protocol to function on the backend code which is defined in the schema and the resolver files in the fileSystem.
+// createHandler() -> is the method where we configure the schema and the rootValue props.
+app.use('/graphql', createHandler({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver
+    })
+);
+
+// // Always make use the routes middleware is build after the response headers are set.
+// // Middleware to register the routes with the '/feeds' filter/flag to create and access the routes.
+// app.use('/feeds', feedsRoutes);
+// app.use('/auth', userRoutes);
 
 // Configuring the middlware to catch the global errors and customize the errors in the application.
 app.use((error, req, res, next) => {
@@ -88,14 +104,14 @@ mongoose.connect(DB_URL).then(result => {
     // This mechanism is configured using the HTTP server in the backend and also by another package which has to be installed in the client side to do the heavy lifting.
 
     // Configuring the application server to respond/listen on the host 8080.
-    const server = app.listen(8080);
+    app.listen(8080);
     
-    // Importing the socket.js file which has the re-usable module and accessing the init() method to initialize the server.
-    const io = require('./socket').init(server);
-    // Here on the "io" the socket.io provides with action methods like on() to create the connection to the client-side of the application.
-    io.on('connection', (socket) => {
-        console.log('Connected to the socket successfully.');
-    });
+    // // Importing the socket.js file which has the re-usable module and accessing the init() method to initialize the server.
+    // const io = require('./socket').init(server);
+    // // Here on the "io" the socket.io provides with action methods like on() to create the connection to the client-side of the application.
+    // io.on('connection', (socket) => {
+    //     console.log('Connected to the socket successfully.');
+    // });
     }).catch(err => {
     console.log(err);
 });
