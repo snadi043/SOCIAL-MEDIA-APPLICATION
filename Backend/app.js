@@ -45,9 +45,9 @@ const mongoose = require('mongoose');
 // Initializing the 'body-parser' package to use it in the application.
 const bodyParser = require('body-parser');
 
-// Importing the routes file to update it in the whole application.
-const feedsRoutes = require('./routes/feeds');
-const userRoutes = require('./routes/user');
+// // Importing the routes file to update it in the whole application.
+// const feedsRoutes = require('./routes/feeds');
+// const userRoutes = require('./routes/user');
 
 // Initializing the app with express.
 const app = express();
@@ -74,7 +74,8 @@ app.use((req, res, next) => {
 // createHandler() -> is the method where we configure the schema and the rootValue props.
 app.use('/graphql', createHandler({
     schema: graphqlSchema,
-    rootValue: graphqlResolver
+    rootValue: graphqlResolver,
+    graphqli: true
     })
 );
 
