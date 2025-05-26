@@ -13,11 +13,28 @@ const User =  require('../models/user');
 //Importing bcrypt package to hash the password.
 const bcrypt = require('bcryptjs');
 
+const validator = require('validator');
+
 module.exports = {
     // Implementing the concept of async and await to execute the resolver function.
     // The resolver function usually accepts {args, req} which can also be replaced by 
     // object destructuring by directly accepting the userInput which is expected from the mutation defined in the schema.
     createUser: async function ({userInput}, req){
+        // Implementing error-handling in graphql using "validator" package.
+        const errors = [];
+        if(!validator.isEmail(userInput.email)){
+            errors.push({message: 'Invalid E-mail address'});
+        }
+        if(validator.isEmpty(userInput.password) || !validator.isLength(userInput.password, {min: 5})){
+            errors.push({message: 'Password is too short'});
+        }
+        if(errors.length > 0){
+            const error = new Error('Invalid input');
+            error.data = errors;
+            error.code = 422;
+            throw error;
+        }
+
         const email = userInput.email;
         const existingUser = await User.findOne({email: email});
         // Error validation for existing user.
