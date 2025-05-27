@@ -7,6 +7,9 @@ const path =  require('path');
 // Importing multer package in the application.
 const multer = require('multer');
 
+//Importing "auth" module.
+const auth = require('./middleware/auth');
+
 // Importing the resolvers and the schema objects to configure with the middleware in order to complie the graphql mechanism in the application.
 const graphqlSchema =  require('./graphql/schema');
 const graphqlResolver = require('./graphql/resolvers');
@@ -71,6 +74,11 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+// Using the "auth" module in the middleware before initializing the graphql middleware.
+// The purpose to put this before the graphql middleware is that the auth modules gets 
+// executed for all the request made by the graphql when reading the file.
+app.use(auth);
 
 // Middleware to configure the graphql mechanism in the application.
 // "/graphql" -> is the single endpoint which deals with HTTP protocol to function on the backend code which is defined in the schema and the resolver files in the fileSystem.

@@ -6,8 +6,10 @@ const Feeds = require('../models/feeds');
 //Importing bcrypt package to hash the password.
 const bcrypt = require('bcryptjs');
 
+//Importing "jsonwebtoken" package to implement the login functionality by verifying the token.
 const jwt = require('jsonwebtoken');
 
+//Importing validator package to work and throw the validation errors for all the expected conditions.
 const validator = require('validator');
 
 module.exports = {
@@ -48,6 +50,11 @@ module.exports = {
         return { ...this.createUser._doc, _id: createdUser._id.toString()}
     },
     createPost: async function ({postInput}, req){
+        if(!req.isAuth){
+            const error = new Error('Authentication Failed');
+            error.status = 401;
+            throw error;
+        }
         const errors = [];
         if(validator.isEmpty(postInput.title) || !validator.isLength(postInput.title, {min: 5})){
             errors.push({message: 'Please enter a input which is not empty and with atleast 5 charecters'});
@@ -61,12 +68,21 @@ module.exports = {
             error.code = 422;
             throw error;
         }
+        const user = User.findById(req.userId);
+        if(!user){
+            const error = new Error('User not found');
+            error.status = 401;
+            throw error;
+        }
         const feeds = new Feeds({
             title: postInput.title,
             content: postInput.content,
-            imageUrl: postInput.imageUrl
+            imageUrl: postInput.imageUrl,
+            creator: user,
         });
         const createdFeeds = await feeds.save();
+        user.posts.push(createdFeeds);
+        await user.save();
         return { ...createdFeeds._doc, _id: createdFeeds._id.toString(), createdAt: createdFeeds.createdAt.toISOString(), updatedAt: feeds.updatedAt.toISOString()};
     },
     login: async function({email, password}, req){
