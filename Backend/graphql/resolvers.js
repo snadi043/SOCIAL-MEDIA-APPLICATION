@@ -13,6 +13,8 @@ const User =  require('../models/user');
 //Importing bcrypt package to hash the password.
 const bcrypt = require('bcryptjs');
 
+const jwt = require('jsonwebtoken');
+
 const validator = require('validator');
 
 module.exports = {
@@ -51,5 +53,28 @@ module.exports = {
         });
         const createdUser = await user.save();
         return { ...this.createUser.doc, _id: createdUser._id.toString()}
+    },
+    login: async function({email, password}, req){
+        const user = User.findOne({email: email});
+        if(!user){
+            const error = new Error('User not found');
+            error.code = 401;
+            throw error;
+        }
+        const isEqual = bcrypt.compare(password, user.password);
+        if(!isEqual){
+            const error = new Error('Passwords didnot match');
+            error.code = 401;
+            throw error;
+        }
+        const token = jwt.sign({
+            userId: user._id.toString(),
+            email: user.email
+        },
+        'enterasecretkeyhere',
+        {
+            expiresIn: '1h'
+        });
+        return {token: token, userId: user._id.toString()};
     }
 };

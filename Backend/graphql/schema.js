@@ -59,8 +59,13 @@ module.exports = buildSchema(`
         password: String!
     } 
     
-    tyoe RootQuery {
-        hello: String!
+    type: AuthData {
+        token: String!
+        userId: String!
+    }
+        
+    type RootQuery {
+        login({email: String!, password: String!}) : AuthData!
     }
 
     type RootMutation {
