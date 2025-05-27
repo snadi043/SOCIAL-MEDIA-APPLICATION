@@ -57,7 +57,13 @@ module.exports = buildSchema(`
         email: String!
         name: String!
         password: String!
-    } 
+    }
+    
+    input PostInputData {
+        title: String!
+        content: String!
+        imageUrl: String!    
+    }
     
     type: AuthData {
         token: String!
@@ -69,9 +75,13 @@ module.exports = buildSchema(`
     }
 
     type RootMutation {
-     // createUser() -> This is the property for which the resolver has to be designed which has the data to filter as per the requirements of the application.
-     // createUser() -> expects the inputs (parameters) which is userInput of type UserInputData and returns the output which is User.
+    // createUser() -> This is the property for which the resolver has to be designed which has the data to filter as per the requirements of the application.
+    // createUser() -> expects the inputs (parameters) which is userInput of type UserInputData and returns the output which is User.
         createUser(userInput: UserInputData) : User!
+
+    // createPost() -> This is the property for which the resolver has to be designed which has the data to filter as per the requirements of the application.
+    // createPost() -> expects the inputs (parameters) which is postInput of type PostInputData and returns the output which is Post.
+        createPost(postInput: PostInputData) : Post!
     }
 
     schema {

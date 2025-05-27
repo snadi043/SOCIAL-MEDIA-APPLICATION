@@ -1,15 +1,8 @@
-// // This is the file which deals with the actual data for the key which is defined in the schema file under the "query" property.
-// module.exports = {
-//     hello(){
-//         return {
-//             title: 'Hello World',
-//             value: 12567,
-//         };   
-//     }
-// }
-
 // Importing the User Model to implement the user validation.
 const User =  require('../models/user');
+// Importing the Post Model to implement the user validation.
+const Feeds = require('../models/feeds');
+
 //Importing bcrypt package to hash the password.
 const bcrypt = require('bcryptjs');
 
@@ -52,7 +45,29 @@ module.exports = {
             password: hashedPswd
         });
         const createdUser = await user.save();
-        return { ...this.createUser.doc, _id: createdUser._id.toString()}
+        return { ...this.createUser._doc, _id: createdUser._id.toString()}
+    },
+    createPost: async function ({postInput}, req){
+        const errors = [];
+        if(validator.isEmpty(postInput.title) || !validator.isLength(postInput.title, {min: 5})){
+            errors.push({message: 'Please enter a input which is not empty and with atleast 5 charecters'});
+        }
+        if(validator.isEmpty(postInput.content) || !validator.isLength(postInput.content, {min: 5})){
+            errors.push({message: 'Please enter a input which is not empty and with atleast 5 charecters'});
+        }
+        if(errors.length > 0){
+            const error = new Error('Post creation failed');
+            error.data = errors;
+            error.code = 422;
+            throw error;
+        }
+        const feeds = new Feeds({
+            title: postInput.title,
+            content: postInput.content,
+            imageUrl: postInput.imageUrl
+        });
+        const createdFeeds = await feeds.save();
+        return { ...createdFeeds._doc, _id: createdFeeds._id.toString(), createdAt: createdFeeds.createdAt.toISOString(), updatedAt: feeds.updatedAt.toISOString()};
     },
     login: async function({email, password}, req){
         const user = User.findOne({email: email});
