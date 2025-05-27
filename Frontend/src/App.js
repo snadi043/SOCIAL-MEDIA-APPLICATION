@@ -69,7 +69,7 @@ class App extends Component {
             password: "${authData.password.value}"
           )
           {
-            token,
+            token
             userId
           }
         }
@@ -133,7 +133,7 @@ class App extends Component {
           name: "${authData.signupForm.name.value}",
           password: "${authData.signupForm.password.value}",
          }){
-          _id,
+          _id
           email
           }
       },

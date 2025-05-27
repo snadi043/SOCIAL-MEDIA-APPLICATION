@@ -173,37 +173,54 @@ class Feed extends Component {
     formData.append('content', postData.content);
     formData.append('image', postData.image);
     // Set up data (with image!)
-    let url = 'http://localhost:8080/feeds/post'; // URL to add a new feed/post to the application.
-    // Condition to check if the user wants to edit the post, also then, access the same URL.
-    let method = 'POST';
-    if (this.state.editPost) {
-      url = 'http://localhost:8080/feeds/post/' + this.state.editPost._id;
-      method = 'PUT';
+
+    let graphqlCreatePostQuery = {
+      query: `
+      mutation{
+        createPost(postInput: {
+          title: "${postData.title}",
+          content: "${postData.content}",
+          imageUrl: "some url"  
+        }){
+          _id
+          title
+          content
+          creator {
+            name
+            }
+          createdAt
+          }
+      }`
+
     }
-  // This is the same URL to create the new post and also to this URL we have to configure the headers
+    let url = 'http://localhost:8080/graphql'; // URL to add a new feed/post to the application.
     fetch(url, {
-      method: method,
-      body: formData,
-  // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
+      method: 'POST',
+      body: JSON.stringify(graphqlCreatePostQuery),
+      // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
       headers: {
-        Authorization: 'Bearer ' + this.props.token
+        Authorization: 'Bearer ' + this.props.token,
+        'Content-Type': 'application/json'
       }
     })
       .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error('Creating or editing a post failed!');
-        }
         return res.json();
       })
       .then(resData => {
+        if(resData.errors && resData.errors[0].status === 422){
+          throw new Error('Validation failed. Make sure the email address isnt used yet');
+        }
+        if(resData.errors){
+          throw new Error('Post creation failed');
+        }
         console.log(resData);
         const post = {
-          _id: resData.post._id,
-          title: resData.post.title,
-          content: resData.post.content,
-          creator: resData.post.creator,
-          createdAt: resData.post.createdAt
-        };
+          _id: resData.data.createPost._id,
+          title: resData.data.createPost.title,
+          content: resData.data.createPost.content,
+          creator: resData.data.createPost.creator,
+          createdAt: resData.data.createPost.createdAt,
+        }
         this.setState(prevState => {
           return {
             isEditing: false,
