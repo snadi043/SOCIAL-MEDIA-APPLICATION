@@ -108,14 +108,18 @@ module.exports = {
         });
         return {token: token, userId: user._id.toString()};
     },
-    getPost: async function(args, req){
+    getPost: async function({page}, req){
        if(!req.isAuth){
         const error = new Error('Authentication failed');
         error.code = 401;
         throw error;
        }
+       if(!page){
+        page = 1;
+       }
+       const perPage = 2;
        const totalPosts = await Feeds.countDocuments();
-       const posts = await Feeds.find().sort({createdAt: -1}).populate('creator');
+       const posts = await Feeds.find().sort({createdAt: -1}).skip((page - 1) * perPage).limit(perPage).populate('creator');
        return { posts: posts.map(p => {
             return { ...p._doc, 
                 _id: p._id.toISOString(), 

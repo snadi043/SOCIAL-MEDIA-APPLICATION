@@ -77,7 +77,7 @@ module.exports = buildSchema(`
         
     type RootQuery {
         login({email: String!, password: String!}) : AuthData!
-        getPost : PostData!
+        getPost(page) : PostData! // expecting the "page" as a parameter to implement pagination in the application.
     }
 
     type RootMutation {
