@@ -102,27 +102,47 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
+    const graphqlGetPostQuery = {
+      query: `
+        {
+          getPost{
+            posts{
+              title
+              content
+              creator{
+                name
+              }
+              createdAt
+          }
+            totalPosts
+          }
+        }`
+    };
+      
     // URL to GET the feeds from the database(mongoDB) eventually to render on to the UI.
-    fetch('http://localhost:8080/feeds/posts?page=' + page, {
+    fetch('http://localhost:8080/graphql', {
+      method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + this.props.token
-      }
+        Authorization: 'Bearer ' + this.props.token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(graphqlGetPostQuery),
     })
       .then(res => {
-        if (res.status !== 200) {
-          throw new Error('Failed to fetch posts.');
-        }
         return res.json();
       })
       .then(resData => {
+        if(resData.errors){
+          throw new Error('Fetching Posts failed.');
+        }
         this.setState({
-          posts: resData.posts.map(post => {
+          posts: resData.data.posts.posts.map(post => {
             return {
               ...post,
               imagePath: post.imageUrl
             };
           }),
-          totalPosts: resData.totalItems,
+          totalPosts: resData.data.posts.totalPosts,
           postsLoading: false
         });
       })
@@ -222,7 +242,17 @@ class Feed extends Component {
           createdAt: resData.data.createPost.createdAt,
         }
         this.setState(prevState => {
+        let updatedPosts = [...prevState.posts];
+          if (prevState.editPost) {
+            const postIndex = prevState.posts.findIndex(
+              p => p._id === prevState.editPost._id
+            );
+            updatedPosts[postIndex] = post;
+          } else {
+            updatedPosts.unshift(post);
+          }
           return {
+            posts: updatedPosts,
             isEditing: false,
             editPost: null,
             editLoading: false
