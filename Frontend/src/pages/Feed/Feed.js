@@ -189,39 +189,50 @@ class Feed extends Component {
     });
     // Initiating the formData which has the ability to handle multpile data points from the form inputs like texts and files. 
     const formData = new FormData();
-    formData.append('title', postData.title);
-    formData.append('content', postData.content);
     formData.append('image', postData.image);
     // Set up data (with image!)
-
-    let graphqlCreatePostQuery = {
-      query: `
-      mutation{
-        createPost(postInput: {
-          title: "${postData.title}",
-          content: "${postData.content}",
-          imageUrl: "some url"  
-        }){
-          _id
-          title
-          content
-          creator {
-            name
-            }
-          createdAt
-          }
-      }`
-
+    if(this.state.editPost){
+      formData.append('oldPath', this.state.editPost.imagePath);
     }
-    let url = 'http://localhost:8080/graphql'; // URL to add a new feed/post to the application.
-    fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(graphqlCreatePostQuery),
-      // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
+    fetch('http://localhost:8080/image-upload', {
+      method: 'PUT',
       headers: {
         Authorization: 'Bearer ' + this.props.token,
-        'Content-Type': 'application/json'
-      }
+      },
+      body: formData
+    }).then(res => {
+      res.json();
+    }).then(resultData => {
+      const imageUrl = resultData.filePath;
+      let graphqlCreatePostQuery = {
+        query: `
+        mutation{
+          createPost(postInput: {
+            title: "${postData.title}",
+            content: "${postData.content}",
+            imageUrl: "${imageUrl}"  
+          }){
+            _id
+            title
+            content
+            imagUrl
+            creator {
+              name
+              }
+            createdAt
+            }
+        }`
+      };
+      let url = 'http://localhost:8080/graphql'; // URL to add a new feed/post to the application.
+      return fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(graphqlCreatePostQuery),
+        // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
+        headers: {
+          Authorization: 'Bearer ' + this.props.token,
+          'Content-Type': 'application/json'
+        }
+    });
     })
       .then(res => {
         return res.json();
@@ -240,6 +251,7 @@ class Feed extends Component {
           content: resData.data.createPost.content,
           creator: resData.data.createPost.creator,
           createdAt: resData.data.createPost.createdAt,
+          imagePath: resData.data.createPost.imageUrl
         }
         this.setState(prevState => {
         let updatedPosts = [...prevState.posts];
