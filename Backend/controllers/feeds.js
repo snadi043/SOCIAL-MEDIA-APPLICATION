@@ -4,9 +4,6 @@ const fs = require('fs');
 // Importing the socket.js file to use it in order to push the data to the users after the post is created.
 const io = require('../socket');
 
-// Importing the path package to create the path.
-const path = require('path');
-
 // Importing the models into the controller file to connect to the database.
 const Feeds = require('../models/feeds');
 const User = require('../models/user');
@@ -171,12 +168,6 @@ exports.editPost = async (req, res, next) => {
         next(err);
     };
 }
-
-// This is a helper function to clear the images in the application used while updating the post or deleting the post.
-const deleteImage = (filePath) => {
-    filePath = path.join(__dirname, '..', filePath);
-    fs.unlink(filePath, err => console.log(err));
-};
 
 // Controller to respond to the GET -> /feeds/post url in the applicaton.
 exports.deletePost = async (req, res, next) => {

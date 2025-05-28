@@ -75,10 +75,34 @@ app.use((req, res, next) => {
     next();
 });
 
+
+// This is a helper function to clear the images in the application used while updating the post or deleting the post.
+const deleteImage = (filePath) => {
+    filePath = path.join(__dirname, '..', filePath);
+    fs.unlink(filePath, err => console.log(err));
+};
+
 // Using the "auth" module in the middleware before initializing the graphql middleware.
 // The purpose to put this before the graphql middleware is that the auth modules gets 
 // executed for all the request made by the graphql when reading the file.
 app.use(auth);
+
+// This is the middleware to handle the image formats in the application based on graphql.
+// As it is known that, there is no conflict in using graphql alongside with regular REST API.
+// So, the image upload process is made in such a way that, a new REST endpoint is created to return the imageUrl
+// which is then handled in the frontend by the graphql to use it for both creating and editing the image in the application.
+app.put('/image-upload', (req, res, next) => {
+    if(!req.isAuth){
+        throw new Error('Authentication Failed');
+    }
+    if(!req.file){
+        res.status(200).json({message: 'Image File not found'});
+    }
+    if(req.body.oldPath){
+        deleteImage(req.body.oldPath);
+    }
+    res.status(201).json({message: 'Image Attached', filePath: req.file.path});
+});
 
 // Middleware to configure the graphql mechanism in the application.
 // "/graphql" -> is the single endpoint which deals with HTTP protocol to function on the backend code which is defined in the schema and the resolver files in the fileSystem.
