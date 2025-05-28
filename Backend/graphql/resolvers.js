@@ -107,5 +107,22 @@ module.exports = {
             expiresIn: '1h'
         });
         return {token: token, userId: user._id.toString()};
+    },
+    getPost: async function(args, req){
+       if(!req.isAuth){
+        const error = new Error('Authentication failed');
+        error.code = 401;
+        throw error;
+       }
+       const totalPosts = await Feeds.countDocuments();
+       const posts = await Feeds.find().sort({createdAt: -1}).populate('creator');
+       return { posts: posts.map(p => {
+            return { ...p._doc, 
+                _id: p._id.toISOString(), 
+                createdAt: p.createdAt.toISOString(),
+                updatedAt: p.updatedAt.toISOString()
+            }
+       }), totalPosts: totalPosts
+    };
     }
 };
