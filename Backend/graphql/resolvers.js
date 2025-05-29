@@ -12,6 +12,9 @@ const jwt = require('jsonwebtoken');
 //Importing validator package to work and throw the validation errors for all the expected conditions.
 const validator = require('validator');
 
+// Importing the "deleteImage" function to perform the deletion of images in the application.
+const {deleteImage} = require('../utilities/deleteImage');
+
 module.exports = {
     // Implementing the concept of async and await to execute the resolver function.
     // The resolver function usually accepts {args, req} which can also be replaced by 
@@ -188,5 +191,29 @@ module.exports = {
                 createdAt: updatedPost.createdAt.toISOString(),
                 updatedAt: updatedPost.updatedAt.toISOString()
         } 
+    },
+    deletetePostById: async function({id}, req){
+        if(!req.isAuth){
+            const error = new Error('Authentication failed.');
+            error.code = 401;
+            throw error;
+        }
+        const post = await Feeds.findById(id);
+        if(!post){
+            const error = new Error('Unable to find the post.');
+            error.code = 404;
+            throw error;
+        }
+        if(post.creator.toString() !== req.userId.toString()){
+            const error = new Error('Permission denied to delete the post');
+            error.code = 402;
+            throw error;
+        }
+        deleteImage(post.imageUrl);
+        const updatedPost = await Feeds.findByIdAndDelete(id);
+        const user = await User.findById(req.userId);
+        user.posts.pull(id);
+        await user.save();
+        return true;
     }
 };

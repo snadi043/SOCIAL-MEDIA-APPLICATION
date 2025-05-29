@@ -91,13 +91,13 @@ module.exports = buildSchema(`
         createPost(postInput: PostInputData) : Post!
     }
 
-<<<<<<< Updated upstream
-=======
-    // updatePost() -> This is the property for which the resolver has to be designed which has the data to filter as per the requirements of the application.
-    // updatePost() -> expects the inputs (parameters) which is an "id" of type ID and "postInput" of type PostInputData and returns the output which is Post.
+    // updatePostById() -> This is the property for which the resolver has to be designed which has the data to filter as per the requirements of the application.
+    // updatePostById() -> expects the inputs (parameters) which is an "id" of type ID and "postInput" of type PostInputData and returns the output which is Post.
         updatePostById(id: ID!, postInput: PostInputData) : Post!
 
->>>>>>> Stashed changes
+    // deletetePostById() -> This is the property for which the resolver has to be designed which has the data to filter as per the requirements of the application.
+    // deletetePostById() -> expects the input (parameter) which is an "id" of type ID and returns the output which is Post.
+        deletetePostById(id: ID!) : Boolean
     schema {
     // query prop is defined to retrieve the data.
     query: RootQuery

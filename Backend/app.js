@@ -4,6 +4,9 @@ const express = require('express');
 // Importing the express provided path package to build the static paths in the application.
 const path =  require('path');
 
+// Importing the "deleteImage" function to perform the deletion of images in the application.
+const {deleteImage} = require('./utilities/deleteImage');
+
 // Importing multer package in the application.
 const multer = require('multer');
 
@@ -74,13 +77,6 @@ app.use((req, res, next) => {
     }
     next();
 });
-
-
-// This is a helper function to clear the images in the application used while updating the post or deleting the post.
-const deleteImage = (filePath) => {
-    filePath = path.join(__dirname, '..', filePath);
-    fs.unlink(filePath, err => console.log(err));
-};
 
 // Using the "auth" module in the middleware before initializing the graphql middleware.
 // The purpose to put this before the graphql middleware is that the auth modules gets 
