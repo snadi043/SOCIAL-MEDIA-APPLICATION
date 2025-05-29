@@ -50,7 +50,31 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch('URL')
+    const graphqlGetPostQuery = {
+      query: `
+        {
+          getPost(page: ${page}){
+            posts{
+              title
+              content
+              creator{
+                name
+              }
+              createdAt
+          }
+            totalPosts
+          }
+        }`
+    };
+    // URL to GET the feeds from the database(mongoDB) eventually to render on to the UI.
+    fetch('http://localhost:8080/graphql', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + this.props.token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(graphqlGetPostQuery),
+    })
       .then(res => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch posts.');
@@ -105,13 +129,76 @@ class Feed extends Component {
     this.setState({
       editLoading: true
     });
+    // Initiating the formData which has the ability to handle multpile data points from the form inputs like texts and files. 
+    const formData = new FormData();
+    formData.append('image', postData.image);
     // Set up data (with image!)
-    let url = 'URL';
-    if (this.state.editPost) {
-      url = 'URL';
+    if(this.state.editPost){
+      formData.append('oldPath', this.state.editPost.imagePath);
     }
-
-    fetch(url)
+    fetch('http://localhost:8080/image-upload', {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Bearer ' + this.props.token,
+      },
+      body: formData
+    }).then(res => {
+      res.json();
+    }).then(resultData => {
+      const imageUrl = resultData.filePath;
+      let graphqlPostQuery = {
+        query: `
+        mutation{
+          createPost(postInput: {
+            title: "${postData.title}",
+            content: "${postData.content}",
+            imageUrl: "${imageUrl}"  
+          }){
+            _id
+            title
+            content
+            imagUrl
+            creator {
+              name
+              }
+            createdAt
+            }
+        }`
+      };
+      if(this.state.editPost){
+        graphqlPostQuery = {
+        query: `{
+          mutation {
+            updatePostById(id: "${this.state.editPost._id}", postInput: {
+              title: "${postData.title}",
+              content: "${postData.content}",
+              imageUrl: "${imageUrl}"  
+            })
+            {
+              _id
+              title
+              content
+              imageUrl
+              creator {
+                name
+              }
+              createdAt
+            }
+          }
+        `
+      };
+    };
+      let url = 'http://localhost:8080/graphql'; // URL to add a new feed/post to the application.
+      return fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(graphqlPostQuery),
+        // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
+        headers: {
+          Authorization: 'Bearer ' + this.props.token,
+          'Content-Type': 'application/json'
+        }
+    });
+    })
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error('Creating or editing a post failed!');
@@ -119,13 +206,24 @@ class Feed extends Component {
         return res.json();
       })
       .then(resData => {
+        if(resData.errors && resData.errors[0].status === 422){
+          throw new Error('Validation failed. Make sure the email address isnt used yet');
+        }
+        if(resData.errors){
+          throw new Error('Post creation failed');
+        }
+        let resultData = 'createPost';
+        if(this.state.editPost){
+          resultData = 'updatePost';
+        }
         const post = {
-          _id: resData.post._id,
-          title: resData.post.title,
-          content: resData.post.content,
-          creator: resData.post.creator,
-          createdAt: resData.post.createdAt
-        };
+          _id: resData.data[resultData]._id,
+          title: resData.data[resultData].title,
+          content: resData.data[resultData].content,
+          creator: resData.data[resultData].creator,
+          createdAt: resData.data[resultData].createdAt,
+          imagePath: resData.data[resultData].imageUrl
+        }
         this.setState(prevState => {
           let updatedPosts = [...prevState.posts];
           if (prevState.editPost) {
