@@ -52,6 +52,36 @@ module.exports = {
         const createdUser = await user.save();
         return { ...this.createUser._doc, _id: createdUser._id.toString()}
     },
+    getUserStatus: async function(args, req){
+        if(!req.isAuth){
+            const error = new Error('Authentication Failed');
+            error.status = 401;
+            throw error;
+        }
+        const user = await User.findById(req.userId);
+        if(!user){
+            const error = new Error('User not found');
+            error.status = 402;
+            throw error;
+        }
+        return { ...user._doc, _id: user._id.toString()};
+    },
+    updateUserStatus: async function({status}, req){
+        if(!req.isAuth){
+            const error = new Error('Authentication Failed');
+            error.status = 401;
+            throw error;
+        }
+        const user = await User.findById(req.userId);
+        if(!user){
+            const error = new Error('User not found');
+            error.status = 402;
+            throw error;
+        }
+        user.status = status;
+        await user.save();
+        return { ...user._doc, _id: user._id.toString()};
+    },
     createPost: async function ({postInput}, req){
         if(!req.isAuth){
             const error = new Error('Authentication Failed');

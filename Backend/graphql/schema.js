@@ -79,6 +79,7 @@ module.exports = buildSchema(`
         login({email: String!, password: String!}) : AuthData!
         getPost(page) : PostData! // expecting the "page" as a parameter to implement pagination in the application.
         getPostById(id: ID!): Post! // expecting the "id" as the parameter to impelement fetching a post by particular ID.
+        getUserStatus : User! // this is the query which deals with fetching the userStatus.
     }
 
     type RootMutation {
@@ -98,6 +99,11 @@ module.exports = buildSchema(`
     // deletetePostById() -> This is the property for which the resolver has to be designed which has the data to filter as per the requirements of the application.
     // deletetePostById() -> expects the input (parameter) which is an "id" of type ID and returns the output which is Post.
         deletetePostById(id: ID!) : Boolean
+    
+    // updateUserStatus() -> This is the property for which the resolver has to be designed which has the data to filter as per the requirements of the application.
+    // updateUserStatus() -> expects the status parameter which is a "String" and returns the output which is User.
+        updateUserStatus(status: String!) : User!
+    
     schema {
     // query prop is defined to retrieve the data.
     query: RootQuery
