@@ -210,7 +210,7 @@ module.exports = {
             throw error;
         }
         deleteImage(post.imageUrl);
-        const updatedPost = await Feeds.findByIdAndDelete(id);
+        await Feeds.findByIdAndDelete(id);
         const user = await User.findById(req.userId);
         user.posts.pull(id);
         await user.save();
