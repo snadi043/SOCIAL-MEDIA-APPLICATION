@@ -119,7 +119,12 @@ class Feed extends Component {
     const graphqlGetPostQuery = {
       query: `
         {
-          getPost(page: ${page}){
+        // Usually for defining the query in the front-end functions, there is no necessity to specify it as a "query" like for mutation.Add commentMore actions
+        // But in order to make use of variables which are used to optimize the performance of injectiing the dynamic values into the query
+        // we use variables. So, in order to implement variables we have to make a special "query" as "mutation" in the frontend function. 
+        
+        query GetPosts($page: Int){ // here "$page" is the dynamic variable value being inegrated with the query and being used in line 113 as a dynamic parameter.
+          getPost(page: $page){
             posts{
               title
               content
@@ -130,7 +135,11 @@ class Feed extends Component {
           }
             totalPosts
           }
-        }`
+        }`,
+        // To the same intial query we can now add new property which is variables and pass the dynamic variable which is page but with no $-sign (should be the same values as in line 126 and 127).
+        variables: {
+          page: page
+        }
     };
       
     // URL to GET the feeds from the database(mongoDB) eventually to render on to the UI.
@@ -166,14 +175,17 @@ class Feed extends Component {
   statusUpdateHandler = event => { 
     event.preventDefault();
     const graphqlUpdateUserStatusQuery = {
-      query: `{
-        mutation {
-          updateUserStatus(status: "${this.state.status}")
+      query: `
+        mutation UpdateUserStatus($userStatus: String!){
+          updateUserStatus(status: $userStatus)
           {
             status
           }
         }
-      }`
+      }`,
+      variables: {
+        userStatus: this.state.status
+      }
     }
     fetch('http://localhost:8080/graphql', {
       method: 'POST',
@@ -234,14 +246,17 @@ class Feed extends Component {
     }).then(res => {
       res.json();
     }).then(resultData => {
-      const imageUrl = resultData.filePath;
-      let graphqlCreatePostQuery = {
+      const imageUrl = resultData.filePath || 'undefined';
+      let graphqlPostQuery = {
         query: `
-        mutation{
-          createPost(postInput: {
-            title: "${postData.title}",
-            content: "${postData.content}",
-            imageUrl: "${imageUrl}"  
+        mutation CreateNewPost(
+          $inputTitle: String!, 
+          $inputContent: String!, 
+          $inputImageUrl: String!){
+        createPost(postInput: {
+          title: $inputTitle,
+          content: $inputContent,
+          imageUrl: $inputImageUrl
           }){
             _id
             title
@@ -252,12 +267,52 @@ class Feed extends Component {
               }
             createdAt
             }
-        }`
+        }`,
+        variables: {
+          inputTitle: postData.title,
+          inputContent: postData.content,
+          inputImageUrl: imageUrl
+        }
       };
+      if(this.state.editPost){
+        graphqlPostQuery = {
+        query: `
+          mutation UpdatePost(
+              $id: ID!, 
+              $inputTitle: String!, 
+              $inputContent: String!, 
+              $inputImageUrl: String!){
+            updatePostById(
+              id: $id, 
+              postInput: {
+                title: $inputTitle,
+                content: $inputContent,
+                imageUrl: $inputImageUrl  
+              })
+            {
+              _id
+              title
+              content
+              imageUrl
+              creator {
+                name
+              }
+              createdAt
+            }
+          }
+        `,
+        variables: {
+          id: this.state.editPost._id,
+          inputTitle: postData.title,
+          inputContent: postData.content,
+          imageUrl: imageUrl
+        }
+      }
+    };
       let url = 'http://localhost:8080/graphql'; // URL to add a new feed/post to the application.
       return fetch(url, {
         method: 'POST',
-        body: JSON.stringify(graphqlCreatePostQuery),
+        body: JSON.stringify(graphqlPostQuery),
         // Make sure the url optional properties are configured properly, like e.g: use "headers" to set the headers, if header is used throws a 500 error.
         headers: {
           Authorization: 'Bearer ' + this.props.token,
@@ -275,14 +330,20 @@ class Feed extends Component {
         if(resData.errors){
           throw new Error('Post creation failed');
         }
-        console.log(resData);
+        if(resData.errors){
+          throw new Error('Post creation failed');
+        }
+        let resultData = 'createPost';
+        if(this.state.editPost){
+          resultData = 'updatePost';
+        }
         const post = {
-          _id: resData.data.createPost._id,
-          title: resData.data.createPost.title,
-          content: resData.data.createPost.content,
-          creator: resData.data.createPost.creator,
-          createdAt: resData.data.createPost.createdAt,
-          imagePath: resData.data.createPost.imageUrl
+          _id: resData.data[resultData]._id,
+          title: resData.data[resultData].title,
+          content: resData.data[resultData].content,
+          creator: resData.data[resultData].creator,
+          createdAt: resData.data[resultData].createdAt,
+          imagePath: resData.data[resultData].imageUrl
         }
         this.setState(prevState => {
         let updatedPosts = [...prevState.posts];
@@ -322,10 +383,13 @@ class Feed extends Component {
     this.setState({ postsLoading: true });
     const graphqlDeletePostById = {
       query: `
-        mutation {
-          deletePostById(id: "${postId}")
+        mutation DeletePost($inputPostId: ID!){
+          deletePostById(id: $inputPostId)
         }
-      `
+      `,
+      variables: {
+        inputPostId: postId
+      }
     };
     fetch('http:localhost:8080/graphql', {
       method: 'POST',
