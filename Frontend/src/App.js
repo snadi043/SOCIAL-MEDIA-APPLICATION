@@ -1,3 +1,4 @@
+
 import React, { Component, Fragment } from 'react';
 import { Route, Switch, Redirect, withRouter } from 'react-router-dom';
 
@@ -17,7 +18,7 @@ class App extends Component {
   state = {
     showBackdrop: false,
     showMobileNav: false,
-    isAuth: true,
+    isAuth: false,
     token: null,
     userId: null,
     authLoading: false,
@@ -56,30 +57,54 @@ class App extends Component {
     localStorage.removeItem('userId');
   };
 
+  // URL to handle the user login and authentication.
   loginHandler = (event, authData) => {
     event.preventDefault();
+    const graphqlLoginQuery = {
+      query: `
+      query UserLogin($inputEmail: String!, $inputPassword: String!){
+        login(
+          email: $inputEmail, 
+          password: $inputPassword
+          )
+          {
+            token
+            userId
+            }
+            }
+            `,
+      variables: {
+        inputEmail: authData.email.value,
+        inputPassword: authData.password.value
+      }      
+    };
     this.setState({ authLoading: true });
-    fetch('URL')
+    fetch('http://localhost:8080/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphqlLoginQuery)
+    })
       .then(res => {
-        if (res.status === 422) {
-          throw new Error('Validation failed.');
-        }
-        if (res.status !== 200 && res.status !== 201) {
-          console.log('Error!');
-          throw new Error('Could not authenticate you!');
-        }
         return res.json();
       })
       .then(resData => {
+         if(resData.errors && resData.errors[0].status === 422){
+          throw new Error('Validation failed. Make sure the email address and password are correct');
+        }
+        if(resData.errors){
+          throw new Error('User login failed');
+        }
         console.log(resData);
         this.setState({
           isAuth: true,
-          token: resData.token,
+          token: resData.data.login.token,
           authLoading: false,
-          userId: resData.userId
+          userId: resData.data.login.userId
         });
-        localStorage.setItem('token', resData.token);
-        localStorage.setItem('userId', resData.userId);
+        localStorage.setItem('token', resData.data.login.token);
+        localStorage.setItem('userId', resData.data.login.userId);
         const remainingMilliseconds = 60 * 60 * 1000;
         const expiryDate = new Date(
           new Date().getTime() + remainingMilliseconds
@@ -97,27 +122,51 @@ class App extends Component {
       });
   };
 
+  // URL to handle the Signing users into the application. 
+  // Converting the REST api endpoint to graphql endpoint to implement graphql mechanism in the application.
+  // As it is known, there is only one endpoint in graphql which is "/graphql" -> defined in app.js file in Backend project.
+  // Also, all the requests are handled by POST method in graphql, so refactoring the signupHandler() as follows.
   signupHandler = (event, authData) => {
     event.preventDefault();
     this.setState({ authLoading: true });
-    fetch('URL')
+    const graphqlSigninQuery =  {
+      query: `
+        mutation SignUp($inputEmail: String!, inputName: String!, inputPassword: String!){
+          createUser(userInput: {
+            email: $inputEmail,
+            name: $inputName,
+            password: $inputPassword,
+          }){
+          _id
+          email
+          }
+        }
+      `,
+      variables: {
+        inputEmail: authData.signupForm.email.value,
+        inputName: authData.signupForm.name.value,
+        inputPassword: authData.signupForm.password.value
+      }
+    };
+    fetch('http://localhost:8080/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphqlSigninQuery)
+    })
       .then(res => {
-        if (res.status === 422) {
-          throw new Error(
-            "Validation failed. Make sure the email address isn't used yet!"
-          );
-        }
-        if (res.status !== 200 && res.status !== 201) {
-          console.log('Error!');
-          throw new Error('Creating a user failed!');
-        }
         return res.json();
       })
       .then(resData => {
-        console.log(resData);
-        this.setState({ isAuth: false, authLoading: false });
-        this.props.history.replace('/');
-      })
+        if(resData.errors && resData.errors[0].status === 422){
+          throw new Error('Validation failed. Make sure the email address isnt used yet');
+        }
+        if(resData.errors){
+          throw new Error('User creation failed');
+        }
+      }
+    )
       .catch(err => {
         console.log(err);
         this.setState({
