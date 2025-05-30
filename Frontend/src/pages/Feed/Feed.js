@@ -104,20 +104,27 @@ class Feed extends Component {
     }
     const graphqlGetPostQuery = {
       query: `
-        {
-          getPost(page: ${page}){
-            posts{
-              title
-              content
-              creator{
-                name
+        // Usually for defining the query in the front-end functions, there is no necessity to specify it as a "query" like for mutation.
+        // But in order to make use of variables which are used to optimize the performance of injectiing the dynamic values into the query
+        // we use variables. So, in order to implement variables we have to make a special "query" as "mutation" in the frontend function. 
+        
+        query GetPosts($page: Int){ // here "$page" is the dynamic variable value being inegrated with the query and being used in line 113 as a dynamic parameter.
+          getPost(page: $page){
+              posts{
+                title
+                content
+                creator{
+                  name
+                }
+                createdAt
               }
-              createdAt
+              totalPosts
+            }
+          }`,
+          variables: {
+            page: page
           }
-            totalPosts
-          }
-        }`
-    };
+        };
       
     // URL to GET the feeds from the database(mongoDB) eventually to render on to the UI.
     fetch('http://localhost:8080/graphql', {
